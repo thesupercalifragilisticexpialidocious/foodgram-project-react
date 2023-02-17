@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from ..users.models import User
+from users.models import User
 
 
 UNIT_CHOICES = (
@@ -30,8 +30,15 @@ class Tag(models.Model):
         max_length=32,
         verbose_name='название'
     )
-    color = models.PositiveIntegerField(unique=True)
-    # normalize to #49B64E
+    color = models.PositiveIntegerField(
+        unique=True,
+        validators=[
+            MaxValueValidator(
+                int('FFFFFF', 16),
+                message='Максимльное значение - FFFFFF'
+            s)
+        ]
+    )
     slug = models.SlugField(
         unique=True,
         max_length=16,
@@ -134,7 +141,7 @@ class IngridientPerRecipe(models.Model):
             MinValueValidator(0.01, message='Укажите число не менее 0.01'),
             MaxValueValidator(8192, message='Укажите число до 8000')
         ],
-        verbose_name='Оценка'
+        verbose_name='количество'
     )
 
     class Meta:
