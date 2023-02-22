@@ -86,7 +86,7 @@ class Recipe(models.Model):
         unique=True,
         verbose_name='описание',
     )
-    duration = models.DurationField(verbose_name='время приготовления')
+    cooking_time = models.DurationField(verbose_name='время приготовления')
     image = models.ImageField(
         upload_to='recipes/',
         unique=True,
