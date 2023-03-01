@@ -21,6 +21,24 @@ from shopping.models import ShoppingList
 from users.models import Favorite, Follow, User
 
 
+def change_recipe_flag(klass, obj, request, pk):
+    """To be used with either Favorite or Shopping List."""
+    recipe = get_object_or_404(Recipe, pk=pk)
+    if request.method == 'POST':
+        klass.objects.create(
+            user=request.user,
+            recipe=recipe,
+        )
+        return Response(obj.get_serializer(recipe).data)
+    relation = get_object_or_404(
+        klass,
+        user=request.user,
+        recipe=recipe
+    )
+    relation.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class IngridientViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -52,16 +70,45 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('retrieve', 'list'):
             return RecipeSerializerSafe
-        return RecipeSerializerUnsafe
+        if self.action in ('destroy', 'create', 'update', 'partial_update'):
+            return RecipeSerializerUnsafe
+        return RecipeSerializerShort
+
+    @action(detail=True, methods=['POST', 'DELETE'])
+    def favorite(self, request, pk=None):
+        return change_recipe_flag(klass=Favorite, obj=self, request=request, pk=pk)
 
 
-class FavorViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
-):
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializerShort
+
+    
+
+
+    @action(detail=False, methods=['GET'])
+    @permission_classes([IsAuthenticated])
+    def download_shopping_cart(request):
+        SHOPPING_STRING = '{name}{"."*(32-len(name))}{amount} {unit}'
+        buffer = io.BytesIO()
+        pdf = canvas.Canvas(buffer)   
+        text = canvas.beginText()
+        text.setTextOrigin(3, 2.5*inch)
+        text.setFont('Helvetica', 18)
+        text.textLine('FOODGRAM')
+        text.setFont('Helvetica-Oblique', 12)
+        for ingridient, amount in request.user.shopping_list \
+            .calculate_ingridients().items():
+            text.textLine(SHOPPING_STRING.format(
+                name=ingridient.name,
+                amount=amount,
+                unit=ingridient.unit
+            ))
+        pdf.drawText(text)
+        pdf.showPage()
+        pdf.save()
+        buffer.seek(0)
+        return FileResponse(buffer, filename=f'shopping_{date.today()}.pdf')
+
+
+
 
 
 , ShoppingListViewSet, SubscriptionViewSet,
@@ -93,30 +140,3 @@ SubscribeViewSet   TokenViewSet, UserViewSet
         review.delete()
         review.title.update_rating()
 
-
-
-
-
-@action(detail=True, methods=['GET'])
-@permission_classes([IsAuthenticated])
-def shopping_pdf(request):
-    SHOPPING_STRING = '{name}{"."*(32-len(name))}{amount} {unit}'
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer)   
-    text = canvas.beginText()
-    text.setTextOrigin(3, 2.5*inch)
-    text.setFont('Helvetica', 18)
-    text.textLine('FOODGRAM')
-    text.setFont('Helvetica-Oblique', 12)
-    for ingridient, amount in request.user.shopping_list \
-        .calculate_ingridients().items():
-        text.textLine(SHOPPING_STRING.format(
-            name=ingridient.name,
-            amount=amount,
-            unit=ingridient.unit
-        ))
-    pdf.drawText(text)
-    pdf.showPage()
-    pdf.save()
-    buffer.seek(0)
-    return FileResponse(buffer, filename=f'shopping_{date.today()}.pdf')
