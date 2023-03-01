@@ -1,27 +1,43 @@
 from django.urls import include, path
 from rest_framework import routers
-from api.views import (CategoryViewSet, CommentViewSet, GenreViewSet,
-                       ReviewViewSet, TitleViewSet, UserViewSet, signup,
-                       TokenViewSet)
+from api.views import (FavorViewSet, IngridientViewSet, RecipeViewSet,
+                       ShoppingListViewSet, SubscribeViewSet,
+                       SubscriptionViewSet, TagViewSet,
+                       TokenViewSet, UserViewSet, shopping_pdf)
 
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
+router.register(r'recipes', RecipeViewSet, basename='recipes')
+router.register(r'tags', TagViewSet, basename='tags')
+router.register(r'ingredients', IngridientViewSet, basename='ingridients')
+router.register(r'users', UserViewSet, basename='users')
+# me?
+router.register(
+    r'users/subscriptions',
+    SubscriptionsViewSet,
+    basename='subscriptions'
+)
+router.register(
+    r'users/(?P<user_id>\d+)/subscribe',
+    SubscribeViewSet,
+    basename='subscribe'
+)
+router.register(
+    r'recipes/(?P<recipe_id>\d+)/favorite',
+    FavorListViewSet,
+    basename='favorite'
+)
+router.register(
+    r'recipes/(?P<recipe_id>\d+)/shopping_cart',
+    ShoppingListViewSet,
+    basename='shopping_cart'
+)
 router.register(r'auth/token', TokenViewSet)
-router.register(r'categories', CategoryViewSet, basename='categories')
-router.register(r'genres', GenreViewSet, basename='genres')
-router.register(r'titles', TitleViewSet, basename='titles')
-router.register(
-    r'titles/(?P<title_id>\d+)/reviews',
-    ReviewViewSet,
-    basename='reviews'
-)
-router.register(
-    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
-    CommentViewSet,
-    basename='comments'
-)
 
 urlpatterns = [
-    path('auth/signup/', signup, name='signup'),
+    path(
+        'recipes/download_shopping_cart/',
+        shopping_pdf,
+        name='shopping_pdf'
+    ),
     path('', include(router.urls)),
 ]

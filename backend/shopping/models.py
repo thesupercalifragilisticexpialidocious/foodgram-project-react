@@ -4,7 +4,7 @@ from recipes.models import Recipe
 from users.models import User
 
 class ShoppingList(models.Model):
-    STR_PRESENTATION = ('{owner} fancies{list})')
+    STR_PRESENTATION = ('{owner} fancies {list})')
     owner = models.ForeignKey(
         User,
         null=False,
@@ -13,7 +13,7 @@ class ShoppingList(models.Model):
     )
     recipes = models.ManyToManyField(
         Recipe,
-        related_name='shopping_lists'
+        related_name='is_in_shopping_cart'
     )
 
     class Meta:
@@ -28,7 +28,7 @@ class ShoppingList(models.Model):
         )
 
     def calculate_ingridients(self):
-        """Get dict {<ingredient_pk>: <total amount of that ingridient>}."""
+        """Get dict {<ingredient object>: <total amount of that ingridient>}."""
         wishlist = {}
         for recipe in self.recipes:
             for ingridient_specification in recipe.ingridients:

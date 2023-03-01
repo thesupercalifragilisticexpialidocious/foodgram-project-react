@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator, ValidationError
 
 from recipes.models import Ingridient, IngridientPerRecipe, Recipe, Tag
+from shopping.models import ShoppingList
 from users.models import Favorite, Follow, User
 
 
@@ -94,6 +95,7 @@ class RecipeSerializerSafe(serializers.ModelSerializer):
     author = UserSerializer()
     ingridients = IngridientPerRecipeSerializerSafe(many=True)
     is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -105,7 +107,7 @@ class RecipeSerializerSafe(serializers.ModelSerializer):
             'author',
             'ingridients',
             'is_favorited',
-            # 'is_in_shopping_cart',
+            'is_in_shopping_cart',
             'image',
             'cooking_time'
         )
@@ -114,6 +116,12 @@ class RecipeSerializerSafe(serializers.ModelSerializer):
         return Favorite.objects.filter(
             user=self.context['request'].user,
             recipe=obj
+        ).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        return ShoppingList.objects.filter(
+            owner=self.context['request'].user,
+            recipes=obj
         ).exists()
 
 

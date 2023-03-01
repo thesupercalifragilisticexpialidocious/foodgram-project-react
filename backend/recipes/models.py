@@ -129,7 +129,7 @@ class IngridientPerRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='including',
+        related_name='ingridients',
     )
     ingridient = models.ForeignKey(
         Ingridient,
