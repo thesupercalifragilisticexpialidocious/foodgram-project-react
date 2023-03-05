@@ -17,7 +17,7 @@ class Follow(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='followed_by',
+        related_name='is_subscribed',
         verbose_name='автор',
     )
 

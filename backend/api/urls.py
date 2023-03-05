@@ -10,4 +10,4 @@ router.register(r'ingredients', IngridientViewSet, basename='ingridients')
 router.register(r'users', UserViewSet, basename='users')
 router.register(r'auth/token', TokenViewSet, basename='tokens')
 
-urlpatterns = [path('', include(router.urls)),]
+urlpatterns = [path('', include(router.urls))]
