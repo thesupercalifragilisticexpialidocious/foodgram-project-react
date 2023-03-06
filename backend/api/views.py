@@ -2,29 +2,31 @@ from datetime import date
 from io import BytesIO
 
 from django_filters.rest_framework import DjangoFilterBackend
-from django.contrib.auth.tokens import default_token_generator
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from api.pagination import FlexiblePagination
 from api.permissions import IsAdminOwnerOrReadOnly
-from api.serializers import (ChangePasswordSerializer, IngridientSerializer,
-                             RecipeSerializerSafe,
-                             RecipeSerializerShort, RecipeSerializerUnsafe,
-                             TagSerializer, TokenSerializer,
+from api.serializers import (ChangePasswordSerializer, IngredientSerializer,
+                             RecipeSerializerSafe, RecipeSerializerShort,
+                             RecipeSerializerUnsafe, TagSerializer,
                              UserSerializer, UserFollowedSerializer)
-from recipes.models import Ingridient, Recipe, Tag
-from users.models import Favorite, Follow, User
+from recipes.models import Favorite, Ingredient, Recipe, Tag
+from users.models import Follow, User
+from shopping.models import ShoppingList
 
 
-class IngridientViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Ingridient.objects.all()
-    serializer_class = IngridientSerializer
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
     permission_classes = (AllowAny,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
@@ -41,6 +43,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('is_favorited', 'is_in_shopping_cart',
                         'author', 'tags')
+    pagination_class = FlexiblePagination
     permission_classes = (IsAdminOwnerOrReadOnly,)
 
     def get_serializer_class(self):
@@ -79,7 +82,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
         if request.method == 'POST':
-            request.user.shopping_list.recipes.add(recipe)
+            ShoppingList.objects.get_or_create(
+                owner=request.user
+            )[0].recipes.add(recipe)
             return Response(self.get_serializer(recipe).data)
         request.user.shopping_list.recipes.remove(recipe)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -88,21 +93,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=False,
         permission_classes=(IsAuthenticated,)
     )
-    def download_shopping_cart(request):
-        SHOPPING_STRING = '{name}{"."*(32-len(name))}{amount} {unit}'
+    def download_shopping_cart(self, request):
+        SHOPPING_STRING = '{name}{offset}{amount} {unit}'
         buffer = BytesIO()
         pdf = canvas.Canvas(buffer)
-        text = canvas.beginText()
-        text.setTextOrigin(3, 2.5*inch)
+        text = pdf.beginText()
+        text.setTextOrigin(1*inch, 11*inch)
         text.setFont('Helvetica', 18)
         text.textLine('FOODGRAM')
-        text.setFont('Helvetica-Oblique', 12)
-        for ingridient, amount in request.user.shopping_list \
-        .calculate_ingridients().items():
+        pdfmetrics.registerFont(TTFont(
+            'FreeSans',
+            'api/static/fonts/FreeSans.ttf'
+        ))
+        text.setFont('FreeSans', 12)
+        for pk, amount in (request.users.shopping_list
+                           .calculate_ingredients().items()):
+            ingredient = Ingredient.objects.get(pk=pk)
             text.textLine(SHOPPING_STRING.format(
-                name=ingridient.name,
+                name=ingredient.name.capitalize(),
+                offset='.'*(100-len(ingredient.name)),
                 amount=amount,
-                unit=ingridient.unit
+                unit=ingredient.get_unit_display()
             ))
         pdf.drawText(text)
         pdf.showPage()
@@ -114,6 +125,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    pagination_class = FlexiblePagination
     permission_classes = (AllowAny,)
 
     @action(
@@ -128,7 +140,7 @@ class UserViewSet(viewsets.ModelViewSet):
             'current_password'
         )):
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        user.set_password(serializer.data.get('new_password'))
+        user.set_password(self.serializer.data.get('new_password'))
         user.save()
         return Response(status=status.HTTP_201_CREATED)
 
@@ -170,47 +182,3 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-@api_view(['POST'])
-@permission_classes((AllowAny,))
-def login(request):
-    serializer = TokenViewSet(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        email=serializer.validated_data['email']
-    )
-    user
-    confirmation_code = default_token_generator.make_token(user)
-    send_mail(
-        subject='YaMDb registration',
-        message=f'Your confirmation code: {confirmation_code}',
-        from_email=None,
-        recipient_list=[user.email],
-    )
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-class TokenViewSet(
-    mixins.CreateModelMixin, mixins.DestroyModelMixin,
- viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    serializer_class = TokenSerializer
-
-    def create(self, request, **kwargs):
-        serializer = TokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = get_object_or_404(
-            User,
-            username=serializer.validated_data['username']
-        )
-
-        if default_token_generator.check_token(
-                user, serializer.validated_data['confirmation_code']
-        ):
-            token = AccessToken.for_user(user)
-            return Response({'token': str(token)}, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

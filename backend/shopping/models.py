@@ -3,9 +3,10 @@ from django.db import models
 from recipes.models import Recipe
 from users.models import User
 
+
 class ShoppingList(models.Model):
-    STR_PRESENTATION = ('{owner} fancies {list})')
-    owner = models.ForeignKey(
+    STR_PRESENTATION = ('{owner} fancies {recipes_number} recipes')
+    owner = models.OneToOneField(
         User,
         null=False,
         on_delete=models.CASCADE,
@@ -24,18 +25,18 @@ class ShoppingList(models.Model):
     def __str__(self):
         return self.STR_PRESENTATION.format(
             owner=self.owner.username,
-            list=self.recipes,
+            recipes_number=self.recipes.count(),
         )
 
-    def calculate_ingridients(self):
-        """Get dict {<ingredient object>: <total amount of that ingridient>}."""
+    def calculate_ingredients(self):
+        """Get dict {<ingredient pk>:<total amount of that ingredient>}."""
         wishlist = {}
-        for recipe in self.recipes:
-            for ingridient_specification in recipe.ingridients:
-                ingridient = ingridient_specification.ingridient
-                if ingridient in wishlist:
-                    wishlist[ingridient] = (wishlist[ingridient] +
-                                            ingridient_specification.amount)
+        for recipe in self.recipes.all():
+            for ingredient_specification in recipe.ingredients.all():
+                ingredient_pk = ingredient_specification.ingredient.pk
+                if ingredient_pk in wishlist:
+                    wishlist[ingredient_pk] = (wishlist[ingredient_pk] +
+                                               ingredient_specification.amount)
                 else:
-                    wishlist[ingridient] = ingridient_specification.amount
+                    wishlist[ingredient_pk] = ingredient_specification.amount
         return wishlist

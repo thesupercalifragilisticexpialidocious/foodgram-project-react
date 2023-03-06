@@ -3,8 +3,10 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-SECRET_KEY = '%fceiq085)10fcyu*oyk__esn(^&gay@9guis1ss5ud(&q^i(o'
-
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    default='%fceiq085)10fcyu*oyk__esn(^&gay@9guis1ss5ud(&q^i(o'
+)
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -18,11 +20,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_filters',
     'djoser',
     'reportlab',
-    'recipes',
     'users',
+    'recipes',
     'shopping',
     'api',
 ]
@@ -67,18 +70,14 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAdminUser', 
+        'rest_framework.permissions.IsAdminUser',
     ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
 }
 
-SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
-   'AUTH_HEADER_TYPES': ('Bearer',),
-}
+AUTH_USER_MODEL = 'users.User'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -110,3 +109,7 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
