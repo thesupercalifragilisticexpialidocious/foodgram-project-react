@@ -24,6 +24,13 @@ from users.models import Follow, User
 from shopping.models import ShoppingList
 
 
+HORIZONTAL_OFFSET = 1
+VERTICAL_OFFSET = 11
+DOT_OFFSET = 100
+HEADER_FONT_SIZE = 18
+BODY_FONT_SIZE = 12
+
+
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -98,20 +105,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         buffer = BytesIO()
         pdf = canvas.Canvas(buffer)
         text = pdf.beginText()
-        text.setTextOrigin(1*inch, 11*inch)
-        text.setFont('Helvetica', 18)
+        text.setTextOrigin(HORIZONTAL_OFFSET*inch, VERTICAL_OFFSET*inch)
+        text.setFont('Helvetica', HEADER_FONT_SIZE)
         text.textLine('FOODGRAM')
         pdfmetrics.registerFont(TTFont(
             'FreeSans',
             'api/static/fonts/FreeSans.ttf'
         ))
-        text.setFont('FreeSans', 12)
+        text.setFont('FreeSans', BODY_FONT_SIZE)
         for pk, amount in (request.users.shopping_list
                            .calculate_ingredients().items()):
             ingredient = Ingredient.objects.get(pk=pk)
             text.textLine(SHOPPING_STRING.format(
                 name=ingredient.name.capitalize(),
-                offset='.'*(100-len(ingredient.name)),
+                offset='.'*(DOT_OFFSET-len(ingredient.name)),
                 amount=amount,
                 unit=ingredient.get_unit_display()
             ))

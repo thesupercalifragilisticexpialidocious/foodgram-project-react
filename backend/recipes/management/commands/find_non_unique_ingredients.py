@@ -8,11 +8,11 @@ class Command(BaseCommand):
     help = 'Seeks duplicates among ingredients.'
 
     def handle(self, *args, **options):
-        lst = list(Ingredient.objects.all())
-        n = len(lst)
-        for i in range(n):
-            for j in range(i+1, n):
-                if lst[i].name == lst[j].name:
+        ingredient_list = list(Ingredient.objects.all())
+        ingredient_total_number = len(ingredient_list)
+        for i in range(ingredient_total_number):
+            for j in range(i+1, ingredient_total_number):
+                if ingredient_list[i].name == ingredient_list[j].name:
                     self.stdout.write(
-                        self.style.SUCCESS(lst[i].name)
+                        self.style.SUCCESS(ingredient_list[i].name)
                     )

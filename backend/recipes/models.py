@@ -4,26 +4,6 @@ from django.db import models
 from users.models import User
 
 
-UNIT_CHOICES = (
-    ('G', 'г'),
-    ('KG', 'кг'),
-    ('ML', 'мл'),
-    ('TSP', 'ч. л.'),
-    ('TBSP', 'ст. л.'),
-    ('PC', 'шт.'),
-    ('AD_LIB', 'по вкусу'),
-    ('GLASS', 'стакан'),
-    ('DROP', 'капля'),
-    ('HANDFUL', 'горсть'),
-    ('SLICE', 'кусок'),
-    ('PACK', 'пакет'),
-    ('BUNCH', 'пучок'),
-    ('PINCH', 'щепотка'),
-    ('CAN', 'банка'),
-    ('PACKAGE', 'упаковка'),
-)
-
-
 class Tag(models.Model):
     name = models.CharField(
         unique=True,
@@ -47,6 +27,7 @@ class Tag(models.Model):
 
     class Meta:
         default_related_name = 'tag'
+        ordering = ('name',)
         verbose_name = 'тэг'
         verbose_name_plural = 'тэги'
 
@@ -55,6 +36,24 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
+    UNIT_CHOICES = (
+        ('G', 'г'),
+        ('KG', 'кг'),
+        ('ML', 'мл'),
+        ('TSP', 'ч. л.'),
+        ('TBSP', 'ст. л.'),
+        ('PC', 'шт.'),
+        ('AD_LIB', 'по вкусу'),
+        ('GLASS', 'стакан'),
+        ('DROP', 'капля'),
+        ('HANDFUL', 'горсть'),
+        ('SLICE', 'кусок'),
+        ('PACK', 'пакет'),
+        ('BUNCH', 'пучок'),
+        ('PINCH', 'щепотка'),
+        ('CAN', 'банка'),
+        ('PACKAGE', 'упаковка'),
+    )
     name = models.CharField(
         max_length=64,
         verbose_name='название'
@@ -69,6 +68,7 @@ class Ingredient(models.Model):
         default_related_name = 'ingredient'
         verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
+        ordering = ('name',)
         constraints = (
             models.UniqueConstraint(
                 fields=('name', 'unit'),
@@ -135,10 +135,10 @@ class IngredientPerRecipe(models.Model):
         on_delete=models.CASCADE,
         related_name='used_in',
     )
-    amount = models.FloatField(
+    amount = models.PositiveIntegerField(
         validators=[
-            MinValueValidator(0.01, message='Укажите число не менее 0.01'),
-            MaxValueValidator(8192, message='Укажите число до 8000')
+            MinValueValidator(1, message='Укажите число не менее 1'),
+            MaxValueValidator(8000, message='Укажите число до 8000')
         ],
         verbose_name='количество'
     )
@@ -146,6 +146,7 @@ class IngredientPerRecipe(models.Model):
     class Meta:
         verbose_name = 'ингридиент на блюдо'
         verbose_name_plural = 'ингридиенты на блюда'
+        ordering = ('recipe', 'ingredient')
         constraints = (
             models.UniqueConstraint(
                 fields=('recipe', 'ingredient'),
@@ -180,6 +181,7 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'избранное'
         verbose_name_plural = 'избранные'
+        ordering = ('user', 'recipe')
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),

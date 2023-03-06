@@ -10,13 +10,16 @@ DATA_DIR = '../data/'
 def parse_ingredients(path):
     """Parse name,unit rows."""
     ingredients = []
-    with open(path) as file:
+    mapping = {}
+    for (code, unit) in Ingredient.UNIT_CHOICES:
+        mapping[unit] = code
+    with open(path, encoding='utf8') as file:
         next(file)
         reader = csv.reader(file)
         for row in reader:
             ingredients.append(Ingredient(
                 name=row[0],
-                unit=row[1]
+                unit=mapping[row[1]]
             ))
     Ingredient.objects.bulk_create(ingredients)
     return len(ingredients)
