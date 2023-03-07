@@ -105,7 +105,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         buffer = BytesIO()
         pdf = canvas.Canvas(buffer)
         text = pdf.beginText()
-        text.setTextOrigin(HORIZONTAL_OFFSET*inch, VERTICAL_OFFSET*inch)
+        text.setTextOrigin(HORIZONTAL_OFFSET * inch, VERTICAL_OFFSET * inch)
         text.setFont('Helvetica', HEADER_FONT_SIZE)
         text.textLine('FOODGRAM')
         pdfmetrics.registerFont(TTFont(
@@ -118,7 +118,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ingredient = Ingredient.objects.get(pk=pk)
             text.textLine(SHOPPING_STRING.format(
                 name=ingredient.name.capitalize(),
-                offset='.'*(DOT_OFFSET-len(ingredient.name)),
+                offset='.' * (DOT_OFFSET - len(ingredient.name)),
                 amount=amount,
                 unit=ingredient.get_unit_display()
             ))
