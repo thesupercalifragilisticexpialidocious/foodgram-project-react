@@ -60,8 +60,8 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
-          sudo docker-compose stop
-          sudo docker-compose rm web
+          sudo docker compose stop
+          sudo docker compose rm web
           touch .env
           echo "${{ secrets.ENV_FILE }}" > infra/.env
           sudo docker compose up -d 
