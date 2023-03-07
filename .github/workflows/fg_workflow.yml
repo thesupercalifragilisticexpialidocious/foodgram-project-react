@@ -60,6 +60,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
+          touch test.txt
           sudo docker-compose stop
           sudo docker-compose rm web
           touch .env
