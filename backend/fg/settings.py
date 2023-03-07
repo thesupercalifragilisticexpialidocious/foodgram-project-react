@@ -9,7 +9,7 @@ SECRET_KEY = os.getenv(
 )
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('HOSTS', default='localhost').split(', ')
 
 
 INSTALLED_APPS = [
@@ -61,12 +61,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'fg.wsgi.application'
 
 
+# DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3',
+#                         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),}}
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.getenv(
+            'DB_ENGINE',
+            default='django.db.backends.postgresql'
+        ),
+        'NAME': os.getenv('DB_NAME', default='postgres'),
+        'USER': os.getenv('POSTGRES_USER', default='postgres'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgresqwerty'),
+        'HOST': os.getenv('DB_HOST', default='db'),
+        'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

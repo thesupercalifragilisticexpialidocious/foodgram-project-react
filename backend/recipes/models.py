@@ -40,6 +40,7 @@ class Ingredient(models.Model):
         ('G', 'г'),
         ('KG', 'кг'),
         ('ML', 'мл'),
+        ('L', 'л'),
         ('TSP', 'ч. л.'),
         ('TBSP', 'ст. л.'),
         ('PC', 'шт.'),
@@ -53,6 +54,18 @@ class Ingredient(models.Model):
         ('PINCH', 'щепотка'),
         ('CAN', 'банка'),
         ('PACKAGE', 'упаковка'),
+        ('STAR', 'звездочка'),
+        ('SEGMENT', 'долька'),
+        ('CLOVE', 'зубчик'),
+        ('LAYER', 'пласт'),
+        ('CARCASS', 'тушка'),
+        ('POD', 'стручок'),
+        ('BRANCH', 'веточка'),
+        ('BTL', 'бутылка'),
+        ('LOAF', 'батон'),
+        ('BAG', 'пакетик'),
+        ('LEAF', 'лист'),
+        ('STEM', 'стебель')
     )
     name = models.CharField(
         max_length=64,

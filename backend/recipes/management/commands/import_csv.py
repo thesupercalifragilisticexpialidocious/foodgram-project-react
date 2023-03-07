@@ -4,7 +4,14 @@ from django.core.management.base import BaseCommand, CommandError
 
 from recipes.models import Ingredient
 
-DATA_DIR = '../data/'
+DATA_DIR = './static/data/'  # '../data/'
+
+
+def ord_str(s):
+    result = 0
+    for letter in s:
+        result = result + ord(letter)
+    return result
 
 
 def parse_ingredients(path):
@@ -12,14 +19,14 @@ def parse_ingredients(path):
     ingredients = []
     mapping = {}
     for (code, unit) in Ingredient.UNIT_CHOICES:
-        mapping[unit] = code
+        mapping[ord_str(unit)] = code
     with open(path, encoding='utf8') as file:
         next(file)
         reader = csv.reader(file)
         for row in reader:
             ingredients.append(Ingredient(
                 name=row[0],
-                unit=mapping[row[1]]
+                unit=mapping[ord_str(row[1])]
             ))
     Ingredient.objects.bulk_create(ingredients)
     return len(ingredients)
