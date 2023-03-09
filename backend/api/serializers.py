@@ -77,7 +77,10 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    measurement_unit = serializers.CharField(source='unit', read_only=True)
+    measurement_unit = serializers.CharField(
+        source='get_unit_display',
+        read_only=True
+    )
 
     class Meta:
         model = Ingredient
@@ -162,7 +165,7 @@ class RecipeSerializerUnsafe(serializers.ModelSerializer):
     ingredients = IngredientPerRecipeSerializerUnsafe(many=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    author = UserSerializer()
+    author = UserSerializer(read_only=True)
 
     class Meta:
         model = Recipe
