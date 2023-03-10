@@ -179,7 +179,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         serializer_class=UserFollowedSerializer,
-        permission_classes=(IsAuthenticated,)
+        permission_classes=(IsAuthenticated,),
+        pagination_class=FlexiblePagination
     )
     def subscriptions(self, request):
         return Response(
