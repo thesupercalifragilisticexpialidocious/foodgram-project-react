@@ -68,7 +68,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if self.request.query_params.get('is_favorited'):
             queryset = queryset.filter(
-                is_favorited=Favorite.objects.filter(
+                is_favorited__in=Favorite.objects.filter(
                     user=self.request.user
                 )
             )
@@ -183,10 +183,12 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def subscriptions(self, request):
         return Response(
-            self.get_serializer(User.objects.filter(
-                author__is_subscribed__in=request.user.follows,
+            self.get_serializer(
+                User.objects.filter(
+                    author__is_subscribed__in=request.user.follows
+                ),
                 many=True
-            )).data
+            ).data
         )
 
     @action(
