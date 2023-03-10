@@ -179,7 +179,7 @@ class RecipeSerializerUnsafe(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(
             **validated_data,
-            author=self.context['request'].users
+            author=self.context['request'].user
         )
         composition = []
         # spec's OrderedDict([('ingredient',<Ingredient:рис>),('amount',10.0)])

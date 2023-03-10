@@ -113,7 +113,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'api/static/fonts/FreeSans.ttf'
         ))
         text.setFont('FreeSans', BODY_FONT_SIZE)
-        for pk, amount in (request.users.shopping_list
+        for pk, amount in (request.user.shopping_list
                            .calculate_ingredients().items()):
             ingredient = Ingredient.objects.get(pk=pk)
             text.textLine(SHOPPING_STRING.format(
@@ -165,7 +165,7 @@ class UserViewSet(viewsets.ModelViewSet):
             self.get_serializer(User.objects.filter(
                 author__is_subscribed__in=request.user.follows,
                 many=True
-            ).data)
+            )).data
         )
 
     @action(
