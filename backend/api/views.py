@@ -1,7 +1,6 @@
 from datetime import date
 from io import BytesIO
 
-from django_filters.rest_framework import DjangoFilterBackend
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from reportlab.pdfbase import pdfmetrics
@@ -46,10 +45,6 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('is_favorited', 'is_in_shopping_cart',
-                        'author', 'tags')
     pagination_class = FlexiblePagination
     permission_classes = (IsAdminOwnerOrReadOnly,)
 
@@ -59,6 +54,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action in ('destroy', 'create', 'update', 'partial_update'):
             return RecipeSerializerUnsafe
         return RecipeSerializerShort
+
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+        tags = self.request.query_params.get('tags')
+        if tags is not None:
+            queryset = queryset.filter(tags__slug__in=tags)
+        author = self.request.query_params.get('author')
+        if author is not None:
+            queryset = queryset.filter(author=author)
+        if self.request.query_params.get('is_favorited'):
+            queryset = queryset.filter(
+                is_favorited__user__contains=self.request.user
+            )
+        if self.request.query_params.get('is_in_shopping_cart'):
+            queryset = queryset.filter(
+                is_in_shopping_cart__contains=self.request.user.shopping_list
+            )
+        return queryset
 
     @action(
         detail=True,

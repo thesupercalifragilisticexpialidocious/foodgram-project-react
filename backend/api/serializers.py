@@ -27,7 +27,7 @@ class DurationNormalizer(serializers.Field):
         return round(value.total_seconds() / 60)
 
     def to_internal_value(self, data):
-        return timedelta(minutes=data)
+        return timedelta(minutes=int(data))
 
 
 class ImageDecoder(serializers.Field):
