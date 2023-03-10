@@ -180,17 +180,16 @@ class UserViewSet(viewsets.ModelViewSet):
         detail=False,
         serializer_class=UserFollowedSerializer,
         permission_classes=(IsAuthenticated,),
-        pagination_class=FlexiblePagination
     )
     def subscriptions(self, request):
-        return Response(
-            self.get_serializer(
-                User.objects.filter(
-                    is_subscribed__in=request.user.follows.all()
-                ),
-                many=True
-            ).data
+        queryset = User.objects.filter(
+            is_subscribed__in=request.user.follows.all()
         )
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        return Response(self.get_serializer(queryset, many=True).data)
 
     @action(
         detail=True,
