@@ -185,7 +185,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(
             self.get_serializer(
                 User.objects.filter(
-                    is_subscribed__in=request.user.follows
+                    is_subscribed__in=request.user.follows.all()
                 ),
                 many=True
             ).data
