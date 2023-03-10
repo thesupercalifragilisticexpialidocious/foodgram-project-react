@@ -30,16 +30,15 @@ class DurationNormalizer(serializers.Field):
         return timedelta(minutes=int(data))
 
 
-class ImageDecoder(serializers.Field):
+class ImageDecoder(serializers.ImageField):
     """Base64 string decoding."""
-    def to_representation(self, value):
-        return value
-
     def to_internal_value(self, data):
         format, imgstr = data.split(';base64,')
-        return ContentFile(
-            b64decode(imgstr),
-            name=f'temp.{format.split("/")[-1]}'
+        return super().to_internal_value(
+            ContentFile(
+                b64decode(imgstr),
+                name=f'temp.{format.split("/")[-1]}'
+            )
         )
 
 
