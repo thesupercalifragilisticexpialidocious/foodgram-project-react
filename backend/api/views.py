@@ -1,6 +1,5 @@
 from datetime import date
 from io import BytesIO
-import logging
 
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
@@ -59,13 +58,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Recipe.objects.all()
         params = self.request.query_params
-        logging.critical(params)
 
         tags = params.getlist('tags')
-        logging.critical(tags)
         if tags is not None:
             queryset = queryset.filter(tags__slug__in=tags)
-        logging.critical(queryset)
         author = params.get('author')
         if author is not None:
             queryset = queryset.filter(author=author)
@@ -83,8 +79,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     owner=self.request.user
                 )
             )
-        logging.critical(queryset)
-        return queryset
+        return queryset.distinct()
 
     @action(
         detail=True,
