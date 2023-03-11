@@ -59,13 +59,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Recipe.objects.all()
         params = self.request.query_params
-        logging.debug(params)
+        logging.critical(params)
 
         tags = params.getlist('tags')
-        logging.debug(tags)
+        logging.critical(tags)
         if tags is not None:
             queryset = queryset.filter(tags__slug__in=tags)
-        logging.debug(queryset)
+        logging.critical(queryset)
         author = params.get('author')
         if author is not None:
             queryset = queryset.filter(author=author)
@@ -83,6 +83,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     owner=self.request.user
                 )
             )
+        logging.critical(queryset)
         return queryset
 
     @action(
