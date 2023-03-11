@@ -57,23 +57,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Recipe.objects.all()
+        params = self.request.query_params
+        print(params)
 
-        tags = self.request.query_params.get('tags')
+        tags = params.get('tags')
+        print(tags)
         if tags is not None:
             queryset = queryset.filter(tags__slug__in=tags)
-
-        author = self.request.query_params.get('author')
+        print(queryset)
+        author = params.get('author')
         if author is not None:
             queryset = queryset.filter(author=author)
 
-        if self.request.query_params.get('is_favorited'):
+        if params.get('is_favorited'):
             queryset = queryset.filter(
                 is_favorited__in=Favorite.objects.filter(
                     user=self.request.user
                 )
             )
 
-        if self.request.query_params.get('is_in_shopping_cart'):
+        if params.get('is_in_shopping_cart'):
             queryset = queryset.filter(
                 is_in_shopping_cart=ShoppingList.objects.get(
                     owner=self.request.user
