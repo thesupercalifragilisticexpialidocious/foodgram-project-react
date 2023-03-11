@@ -27,7 +27,12 @@ class DurationNormalizer(serializers.Field):
         return round(value.total_seconds() / 60)
 
     def to_internal_value(self, data):
-        return timedelta(minutes=int(data))
+        data = int(data)
+        if data > 600000000:
+            raise serializers.ValidationError(
+                'Время приготовления не может превышыть 10 000 000 ч.'
+            )
+        return timedelta(minutes=data)
 
 
 class ImageDecoder(serializers.ImageField):
