@@ -61,7 +61,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         params = self.request.query_params
         logging.debug(params)
 
-        tags = params.get('tags')
+        tags = params.getlist('tags')
         logging.debug(tags)
         if tags is not None:
             queryset = queryset.filter(tags__slug__in=tags)
