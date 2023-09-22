@@ -1,8 +1,9 @@
 # FOODGRAM #
-![alt text](https://github.com/thesupercalifragilisticexpialidocious/foodgram-project-react/actions/workflows/fg_workflow.yml/badge.svg)
 Платформа для обмена кулинарными рецептами. На этом сервисе пользователи могут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать файлом сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
 
 Проект реализован на django 2.2.16, используются библиотеки DRF, djoser, reportlab. В данной конфигурации используются докер-образы nginx и PostgreSQL в качестве серверного движка и базы данных соответственно.
+
+![alt text](https://github.com/thesupercalifragilisticexpialidocious/foodgram-project-react/actions/workflows/fg_workflow.yml/badge.svg)
 
 ### Подготовка переменных среды
 
